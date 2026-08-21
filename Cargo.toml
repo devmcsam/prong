@@ -1,0 +1,21 @@
+[package]
+name = "rong"
+version = "0.1.0"
+edition = "2024"
+authors = ["Samuel McNally <sammcnally587@gmail.com>"]
+categories = ["games"]
+keywords = ["games", "pong", "retro"]
+description = "Pong developed via the bevy engine in rust"
+readme = "README.md"
+license = "MIT"
+
+[dependencies]
+bevy = "0.19.1"
+
+[profile.dev]
+opt-level = 0
+overflow-checks = true
+panic = "unwind"
+lto = false
+debug = true
+debug-assertions = true
