@@ -19,3 +19,4 @@ panic = "unwind"
 lto = false
 debug = true
 debug-assertions = true
+incremental = true
