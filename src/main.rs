@@ -3,6 +3,8 @@
 mod paddle;
 use paddle::{Paddle, PaddleSide, move_paddles};
 mod ball;
+mod ui;
+
 use ball::{Ball, move_ball};
 
 use bevy::prelude::*;

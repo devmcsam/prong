@@ -1,10 +1,11 @@
 //! The `Ball` and logic related to the ball.
 
 use bevy::math::Vec2;
-use bevy::prelude::{Component, Query, Res, Time, Transform, Window, With, Without};
+use bevy::prelude::{Component, Query, Res, ResMut, Time, Transform, Window, With, Without};
 use bevy::window::PrimaryWindow;
 use crate::paddle::{Paddle, PaddleSide};
 use crate::{CIRCLE_RADIUS, INITIAL_BALL_DIRECTION, PADDLE_SIZE};
+use crate::ui::Score;
 
 
 // what does the timestep get mutliplied by?
@@ -38,6 +39,7 @@ pub fn move_ball(
     windows: Query<&Window, With<PrimaryWindow>>,
     paddles: Query<(&Transform, &Paddle), Without<Ball>>,
     mut balls: Query<(&mut Transform, &mut Ball), Without<Paddle>>,
+    mut score: ResMut<Score>,
 ) {
     let Ok(window) = windows.single() else {
         return;
@@ -52,7 +54,6 @@ pub fn move_ball(
         let movement = ball.direction * BALL_SPEED * time.delta_secs();
         ball.position += movement;
 
-        // Access the fields directly so the actual ball is modified.
         if ball.position.y + CIRCLE_RADIUS >= half_height {
             ball.position.y = half_height - CIRCLE_RADIUS;
             ball.direction.y = -ball.direction.y.abs();
@@ -61,7 +62,6 @@ pub fn move_ball(
             ball.direction.y = ball.direction.y.abs();
         }
 
-        // Bounce off either paddle.
         for (paddle_transform, paddle) in &paddles {
             let paddle_position = paddle_transform.translation.truncate();
 
@@ -110,10 +110,12 @@ pub fn move_ball(
 
         if ball.position().x - CIRCLE_RADIUS > half_width {
             // The left player scored. Serve toward the right player.
+            score.increment(PaddleSide::Left);
             ball.position = Vec2::ZERO;
             ball.direction = INITIAL_BALL_DIRECTION.normalize();
         } else if ball.position().x + CIRCLE_RADIUS < -half_width {
             // The right player scored. Serve toward the left player.
+            score.increment(PaddleSide::Right);
             ball.position = Vec2::ZERO;
             ball.direction =
                 Vec2::new(-INITIAL_BALL_DIRECTION.x, INITIAL_BALL_DIRECTION.y)
