@@ -1,11 +1,16 @@
 //! Rong is pong built with modern rust and the bevy game engine.
 
 mod paddle;
+
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use paddle::{Paddle, PaddleSide, move_paddles};
 mod ball;
 mod ui;
 
 use ball::{Ball, move_ball};
+use ui::{
+    Score, exit_button, setup_ui, toggle_fps, update_fps, update_scoreboard,
+};
 
 use bevy::prelude::*;
 use bevy::window::{PrimaryWindow, WindowMode};
@@ -20,16 +25,30 @@ const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(1.0, 0.35);
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Rong".to_string(),
-                mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+        .insert_resource(Score::new(0, 0))
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Rong".to_string(),
+                    mode: WindowMode::BorderlessFullscreen(
+                        MonitorSelection::Primary,
+                    ),
+                    ..default()
+                }),
                 ..default()
             }),
-            ..default()
-        }))
-        .add_systems(Startup, setup)
-        .add_systems(Update, (move_paddles, move_ball).chain())
+            FrameTimeDiagnosticsPlugin::default(),
+        ))
+        .add_systems(Startup, (setup, setup_ui))
+        .add_systems(
+            Update,
+            (
+                (move_paddles, move_ball, update_scoreboard).chain(),
+                toggle_fps,
+                update_fps,
+                exit_button,
+            ),
+        )
         .run();
 }
 
