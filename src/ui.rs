@@ -1,6 +1,7 @@
-use bevy::prelude::*;
-use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
+use crate::GameState;
 use crate::paddle::PaddleSide;
+use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
+use bevy::prelude::*;
 
 #[derive(Resource, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Score {
@@ -44,6 +45,12 @@ pub struct FpsText;
 
 #[derive(Component)]
 pub struct ExitButton;
+
+#[derive(Component)]
+pub struct PauseMenu;
+
+#[derive(Component)]
+pub struct ResumeButton;
 
 pub fn setup_ui(mut commands: Commands) {
     commands
@@ -126,6 +133,76 @@ pub fn setup_ui(mut commands: Commands) {
         Visibility::Hidden,
         FpsText,
     ));
+
+    commands
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                width: percent(100),
+                height: percent(100),
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                row_gap: px(16),
+                ..default()
+            },
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.8)),
+            GlobalZIndex(100),
+            Visibility::Hidden,
+            PauseMenu,
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Text::new("Paused"),
+                TextFont {
+                    font_size: FontSize::Px(64.0),
+                    ..default()
+                },
+                TextColor(Color::WHITE),
+            ));
+
+            parent
+                .spawn((
+                    Button,
+                    Node {
+                        padding: UiRect::axes(px(32), px(12)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
+                    ResumeButton,
+                ))
+                .with_child((
+                    Text::new("Resume"),
+                    TextFont {
+                        font_size: FontSize::Px(28.0),
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                ));
+
+            parent
+                .spawn((
+                    Button,
+                    Node {
+                        padding: UiRect::axes(px(32), px(12)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
+                    ExitButton,
+                ))
+                .with_child((
+                    Text::new("Exit"),
+                    TextFont {
+                        font_size: FontSize::Px(28.0),
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                ));
+        });
 }
 
 pub fn update_scoreboard(
@@ -143,7 +220,7 @@ pub fn update_scoreboard(
     text.0 = format!(
         "{}   {}",
         score.get_left_score(),
-        score.get_right_score()
+        score.get_right_score(),
     );
 }
 
@@ -188,6 +265,59 @@ pub fn update_fps(
     };
 
     text.0 = format!("FPS: {fps:.0}");
+}
+
+pub fn pause_with_escape(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    game_state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    if !keyboard.just_pressed(KeyCode::Escape) {
+        return;
+    }
+
+    match game_state.get() {
+        GameState::Playing => {
+            next_state.set(GameState::Paused);
+        }
+        GameState::Paused => {
+            next_state.set(GameState::Playing);
+        }
+    }
+}
+
+pub fn resume_button(
+    interactions: Query<
+        &Interaction,
+        (Changed<Interaction>, With<ResumeButton>),
+    >,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    for interaction in &interactions {
+        if *interaction == Interaction::Pressed {
+            next_state.set(GameState::Playing);
+        }
+    }
+}
+
+pub fn show_pause_menu(
+    mut pause_menu: Query<&mut Visibility, With<PauseMenu>>,
+) {
+    let Ok(mut visibility) = pause_menu.single_mut() else {
+        return;
+    };
+
+    *visibility = Visibility::Visible;
+}
+
+pub fn hide_pause_menu(
+    mut pause_menu: Query<&mut Visibility, With<PauseMenu>>,
+) {
+    let Ok(mut visibility) = pause_menu.single_mut() else {
+        return;
+    };
+
+    *visibility = Visibility::Hidden;
 }
 
 pub fn exit_button(
