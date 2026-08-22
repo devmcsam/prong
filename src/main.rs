@@ -1,5 +1,9 @@
 //! Rong is pong built with modern rust and the bevy game engine.
 
+mod paddle;
+use paddle::{Paddle, PaddleSide, move_paddles};
+mod ball;
+
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -22,16 +26,6 @@ fn main() {
         .run();
 }
 
-#[derive(Copy, Clone, PartialEq)]
-enum PaddleSide {
-    Left,
-    Right,
-}
-
-#[derive(Component, Copy, Clone, PartialEq)]
-struct Paddle {
-    side: PaddleSide,
-}
 
 #[derive(Component, Copy, Clone, PartialEq)]
 struct Ball {
@@ -68,17 +62,13 @@ fn setup(
         Mesh2d(right_paddle_mesh),
         MeshMaterial2d(right_paddle_material),
         Transform::from_xyz(right_edge - PADDLE_SIZE.x, 0.0, 0.0),
-        Paddle {
-            side: PaddleSide::Right,
-        },
+        Paddle::new(PaddleSide::Right),
     ));
     commands.spawn((
         Mesh2d(left_paddle_mesh),
         MeshMaterial2d(left_paddle_material),
         Transform::from_xyz(left_edge + PADDLE_SIZE.x, 0.0, 0.0),
-        Paddle {
-            side: PaddleSide::Left,
-        },
+        Paddle::new(PaddleSide::Left),
     ));
     commands.spawn((
         Mesh2d(ball_mesh),
@@ -133,7 +123,7 @@ fn move_ball(
                     && ball.position.y - CIRCLE_RADIUS
                     <= paddle_position.y + half_paddle_height;
 
-            let moving_toward_paddle = match paddle.side {
+            let moving_toward_paddle = match paddle.side() {
                 PaddleSide::Left => ball.direction.x < 0.0,
                 PaddleSide::Right => ball.direction.x > 0.0,
             };
@@ -144,7 +134,7 @@ fn move_ball(
                     ((ball.position.y - paddle_position.y) / half_paddle_height)
                         .clamp(-1.0, 1.0);
 
-                let horizontal_direction = match paddle.side {
+                let horizontal_direction = match paddle.side() {
                     PaddleSide::Left => 1.0,
                     PaddleSide::Right => -1.0,
                 };
@@ -153,7 +143,7 @@ fn move_ball(
                     Vec2::new(horizontal_direction, hit_offset * 0.75).normalize();
 
                 // Move the ball outside the paddle so it can't collide repeatedly
-                ball.position.x = match paddle.side {
+                ball.position.x = match paddle.side() {
                     PaddleSide::Left => {
                         paddle_position.x + half_paddle_width + CIRCLE_RADIUS
                     }
@@ -183,32 +173,3 @@ fn move_ball(
     }
 }
 
-fn move_paddles(
-    time: Res<Time>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    windows: Query<&Window, With<PrimaryWindow>>,
-    mut paddles: Query<(&mut Transform, &Paddle)>,
-) {
-    let Ok(window) = windows.single() else {
-        return;
-    };
-
-    let half_paddle_height = PADDLE_SIZE.y / 2.0;
-    let min_y = -window.height() / 2.0 + half_paddle_height;
-    let max_y = window.height() / 2.0 - half_paddle_height;
-
-    for (mut transform, paddle) in &mut paddles {
-        let (up_key, down_key) = match paddle.side {
-            PaddleSide::Left => (KeyCode::KeyW, KeyCode::KeyS),
-            PaddleSide::Right => (KeyCode::ArrowUp, KeyCode::ArrowDown),
-        };
-
-        let direction =
-            keyboard_input.pressed(up_key) as i8 - keyboard_input.pressed(down_key) as i8;
-
-        transform.translation.y +=
-            direction as f32 * PADDLE_SPEED * time.delta_secs();
-
-        transform.translation.y = transform.translation.y.clamp(min_y, max_y);
-    }
-}
