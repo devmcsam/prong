@@ -6,7 +6,7 @@ mod ball;
 use ball::{Ball, move_ball};
 
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
+use bevy::window::{PrimaryWindow, WindowMode};
 
 const PADDLE_SIZE: Vec2 = Vec2::new(10.0, 100.0);
 const CIRCLE_RADIUS: f32 = 10.0;
@@ -18,7 +18,14 @@ const INITIAL_BALL_DIRECTION: Vec2 = Vec2::new(1.0, 0.35);
 fn main() {
     App::new()
         .insert_resource(ClearColor(Color::BLACK))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Rong".to_string(),
+                mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                ..default()
+            }),
+            ..default()
+        }))
         .add_systems(Startup, setup)
         .add_systems(Update, (move_paddles, move_ball).chain())
         .run();
@@ -52,13 +59,21 @@ fn setup(
     commands.spawn((
         Mesh2d(right_paddle_mesh),
         MeshMaterial2d(right_paddle_material),
-        Transform::from_xyz(right_edge - PADDLE_SIZE.x, 0.0, 0.0),
+        Transform::from_xyz(
+            right_edge - PADDLE_SIZE.x / 2.0,
+            0.0,
+            0.0,
+        ),
         Paddle::new(PaddleSide::Right),
     ));
     commands.spawn((
         Mesh2d(left_paddle_mesh),
         MeshMaterial2d(left_paddle_material),
-        Transform::from_xyz(left_edge + PADDLE_SIZE.x, 0.0, 0.0),
+        Transform::from_xyz(
+            left_edge + PADDLE_SIZE.x / 2.0,
+            0.0,
+            0.0,
+        ),
         Paddle::new(PaddleSide::Left),
     ));
     commands.spawn((

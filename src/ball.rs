@@ -49,16 +49,16 @@ pub fn move_ball(
     let half_paddle_height = PADDLE_SIZE.y / 2.0;
 
     for (mut ball_transform, mut ball) in &mut balls {
-        let movement = ball.direction() * BALL_SPEED * time.delta_secs();
+        let movement = ball.direction * BALL_SPEED * time.delta_secs();
         ball.position += movement;
 
-        // Bounce off the top and bottom walls.
-        if ball.position().y + CIRCLE_RADIUS >= half_height {
-            ball.position().y = half_height - CIRCLE_RADIUS;
-            ball.direction().y = -ball.direction().y.abs();
-        } else if ball.position().y - CIRCLE_RADIUS <= -half_height {
+        // Access the fields directly so the actual ball is modified.
+        if ball.position.y + CIRCLE_RADIUS >= half_height {
+            ball.position.y = half_height - CIRCLE_RADIUS;
+            ball.direction.y = -ball.direction.y.abs();
+        } else if ball.position.y - CIRCLE_RADIUS <= -half_height {
             ball.position.y = -half_height + CIRCLE_RADIUS;
-            ball.direction.y = ball.direction().y.abs();
+            ball.direction.y = ball.direction.y.abs();
         }
 
         // Bounce off either paddle.
