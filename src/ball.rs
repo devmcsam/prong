@@ -42,16 +42,6 @@ impl Ball {
             direction,
         }
     }
-
-    #[inline(always)]
-    pub fn position(&self) -> Vec2 {
-        self.position
-    }
-
-    #[inline(always)]
-    pub fn direction(&self) -> Vec2 {
-        self.direction
-    }
 }
 
 /// Advances the countdown for balls waiting to be served.

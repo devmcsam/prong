@@ -1,5 +1,5 @@
 [package]
-name = "rong"
+name = "prong"
 version = "0.1.0"
 edition = "2024"
 authors = ["Samuel McNally <sammcnally587@gmail.com>"]
@@ -24,5 +24,5 @@ incremental = true
 [profile.release]
 opt-level = 3
 lto = "thin"
-codegen-units = 1
+codegen-units = 16
 strip = "symbols"

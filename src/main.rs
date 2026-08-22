@@ -1,4 +1,4 @@
-//! Rong is pong built with modern Rust and the Bevy game engine.
+//! Prong is a game similar to pong built with modern Rust and the Bevy game engine.
 
 mod ball;
 mod paddle;
@@ -36,7 +36,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "Rong".to_string(),
+                    title: "Prong".to_string(),
                     mode: WindowMode::BorderlessFullscreen(
                         MonitorSelection::Primary,
                     ),
