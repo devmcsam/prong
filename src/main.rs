@@ -48,32 +48,30 @@ fn setup(
     let right_edge = width / 2.0;
     let left_edge = -width / 2.0;
 
-    let mesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
-    let material = materials.add(PADDLE_COLOR);
+    let right_paddle_mesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
+    let right_paddle_material = materials.add(PADDLE_COLOR);
+
+    let left_paddle_mesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
+    let left_paddle_material = materials.add(PADDLE_COLOR);
+
+    let ball_mesh = meshes.add(Circle::new(CIRCLE_RADIUS));
+    let ball_material = materials.add(BALL_COLOR);
 
     commands.spawn((
-        Mesh2d(mesh),
-        MeshMaterial2d(material),
+        Mesh2d(right_paddle_mesh),
+        MeshMaterial2d(right_paddle_material),
         Transform::from_xyz(right_edge - PADDLE_SIZE.x, 0.0, 0.0),
         Paddle { y_pos: 0.0 }
     ));
-
-    let mesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
-    let material = materials.add(PADDLE_COLOR);
-
     commands.spawn((
-        Mesh2d(mesh),
-        MeshMaterial2d(material),
+        Mesh2d(left_paddle_mesh),
+        MeshMaterial2d(left_paddle_material),
         Transform::from_xyz(left_edge + PADDLE_SIZE.x, 0.0, 0.0),
         Paddle { y_pos: 0.0 }
     ));
-
-    let mesh = meshes.add(Circle::new(CIRCLE_RADIUS));
-    let material = materials.add(BALL_COLOR);
-
     commands.spawn((
-        Mesh2d(mesh),
-        MeshMaterial2d(material),
+        Mesh2d(ball_mesh),
+        MeshMaterial2d(ball_material),
         Transform::from_xyz(0.0, 0.0, 0.0),
         Ball { position: Vec2::ZERO, direction: Vec2::ZERO }
     ));
