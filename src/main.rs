@@ -4,6 +4,14 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 const PADDLE_SIZE: Vec2 = Vec2::new(10.0, 100.0);
+const CIRCLE_RADIUS: f32 = 15.0;
+
+const PADDLE_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
+// what does the timestep get mutliplied by
+const PADDLE_SPEED: f32 = 50.0;
+const BALL_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
+// what does the timestep get mutliplied by
+const BALL_SPEED: f32 = 100.0;
 
 fn main() {
     App::new()
@@ -16,14 +24,12 @@ fn main() {
 struct Paddle {
     // only need to store y pos as they are on the edge of the window.
     y_pos: f32,
-    speed: f32,
 }
 
+#[derive(Component, Copy, Clone, PartialEq)]
 struct Ball {
     position: Vec2,
     direction: Vec2,
-    radius: f32,
-    speed: f32,
 }
 
 fn setup(
@@ -43,22 +49,32 @@ fn setup(
     let left_edge = -width / 2.0;
 
     let mesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
-    let material = materials.add(Color::srgb(0.5, 0.2, 0.8));
+    let material = materials.add(PADDLE_COLOR);
 
     commands.spawn((
         Mesh2d(mesh),
         MeshMaterial2d(material),
         Transform::from_xyz(right_edge - PADDLE_SIZE.x, 0.0, 0.0),
-        Paddle { y_pos: 0.0, speed: 50.0 }
+        Paddle { y_pos: 0.0 }
     ));
 
     let mesh = meshes.add(Rectangle::new(PADDLE_SIZE.x, PADDLE_SIZE.y));
-    let material = materials.add(Color::srgb(0.5, 0.2, 0.8));
+    let material = materials.add(PADDLE_COLOR);
 
     commands.spawn((
         Mesh2d(mesh),
         MeshMaterial2d(material),
         Transform::from_xyz(left_edge + PADDLE_SIZE.x, 0.0, 0.0),
-        Paddle { y_pos: 0.0, speed: 50.0 }
+        Paddle { y_pos: 0.0 }
+    ));
+
+    let mesh = meshes.add(Circle::new(CIRCLE_RADIUS));
+    let material = materials.add(BALL_COLOR);
+
+    commands.spawn((
+        Mesh2d(mesh),
+        MeshMaterial2d(material),
+        Transform::from_xyz(0.0, 0.0, 0.0),
+        Ball { position: Vec2::ZERO, direction: Vec2::ZERO }
     ));
 }
