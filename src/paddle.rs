@@ -1,7 +1,12 @@
+//! The `Paddle`, `PaddleSide` and logic related to the paddles.
+
 use bevy::input::ButtonInput;
 use bevy::prelude::{Component, KeyCode, Query, Res, Time, Transform, Window, With};
 use bevy::window::PrimaryWindow;
-use crate::{PADDLE_SIZE, PADDLE_SPEED};
+use crate::PADDLE_SIZE;
+
+// what does the timestep get mutliplied by?
+const PADDLE_SPEED: f32 = 200.0;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum PaddleSide {
