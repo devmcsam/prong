@@ -4,26 +4,32 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 const PADDLE_SIZE: Vec2 = Vec2::new(10.0, 100.0);
-const CIRCLE_RADIUS: f32 = 15.0;
-
+const CIRCLE_RADIUS: f32 = 10.0;
 const PADDLE_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
-// what does the timestep get mutliplied by
-const PADDLE_SPEED: f32 = 50.0;
+// what does the timestep get mutliplied by?
+const PADDLE_SPEED: f32 = 250.0;
 const BALL_COLOR: Color = Color::srgb(1.0, 1.0, 1.0);
-// what does the timestep get mutliplied by
+// what does the timestep get mutliplied by?
 const BALL_SPEED: f32 = 100.0;
 
 fn main() {
     App::new()
+        .insert_resource(ClearColor(Color::BLACK))
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, setup)
+        .add_systems(Update, move_paddles)
         .run();
+}
+
+#[derive(Copy, Clone, PartialEq)]
+enum PaddleSide {
+    Left,
+    Right,
 }
 
 #[derive(Component, Copy, Clone, PartialEq)]
 struct Paddle {
-    // only need to store y pos as they are on the edge of the window.
-    y_pos: f32,
+    side: PaddleSide,
 }
 
 #[derive(Component, Copy, Clone, PartialEq)]
@@ -61,13 +67,17 @@ fn setup(
         Mesh2d(right_paddle_mesh),
         MeshMaterial2d(right_paddle_material),
         Transform::from_xyz(right_edge - PADDLE_SIZE.x, 0.0, 0.0),
-        Paddle { y_pos: 0.0 }
+        Paddle {
+            side: PaddleSide::Right,
+        },
     ));
     commands.spawn((
         Mesh2d(left_paddle_mesh),
         MeshMaterial2d(left_paddle_material),
         Transform::from_xyz(left_edge + PADDLE_SIZE.x, 0.0, 0.0),
-        Paddle { y_pos: 0.0 }
+        Paddle {
+            side: PaddleSide::Left,
+        },
     ));
     commands.spawn((
         Mesh2d(ball_mesh),
@@ -75,4 +85,34 @@ fn setup(
         Transform::from_xyz(0.0, 0.0, 0.0),
         Ball { position: Vec2::ZERO, direction: Vec2::ZERO }
     ));
+}
+
+fn move_paddles(
+    time: Res<Time>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    mut paddles: Query<(&mut Transform, &Paddle)>,
+) {
+    let Ok(window) = windows.single() else {
+        return;
+    };
+
+    let half_paddle_height = PADDLE_SIZE.y / 2.0;
+    let min_y = -window.height() / 2.0 + half_paddle_height;
+    let max_y = window.height() / 2.0 - half_paddle_height;
+
+    for (mut transform, paddle) in &mut paddles {
+        let (up_key, down_key) = match paddle.side {
+            PaddleSide::Left => (KeyCode::KeyW, KeyCode::KeyS),
+            PaddleSide::Right => (KeyCode::ArrowUp, KeyCode::ArrowDown),
+        };
+
+        let direction =
+            keyboard_input.pressed(up_key) as i8 - keyboard_input.pressed(down_key) as i8;
+
+        transform.translation.y +=
+            direction as f32 * PADDLE_SPEED * time.delta_secs();
+
+        transform.translation.y = transform.translation.y.clamp(min_y, max_y);
+    }
 }
