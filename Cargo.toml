@@ -8,6 +8,8 @@ keywords = ["games", "pong", "retro"]
 description = "Pong developed via the bevy engine in rust"
 readme = "README.md"
 license = "MIT"
+repository = "https://github.com/devmcsam/prong"
+homepage = "https://github.com/devmcsam/prong"
 
 [dependencies]
 bevy = "0.19.1"
